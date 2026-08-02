@@ -27,36 +27,61 @@ a cold visitor has about any active-ingredient serum ("will this work" vs.
 
 ## Palette & type
 
-Three colors, deliberately restrained — **"Cool minimal"**:
+Three colors, deliberately restrained — **"Cognac Match"**:
 
 | Role | Hex | Use |
 |---|---|---|
 | Espresso (near-black) | `#2B2420` | Headlines, primary CTA, footer, final-CTA background |
 | Warm off-white | `#FAF9F6` | Page background |
-| Dusty blue-grey accent | `#5F7080` | Links, icons, star ratings, one CTA variant — used sparingly, never decoratively |
+| Cognac accent | `#A85D1D` (dark `#7C4415`, light `#C88A4A`) | Links, icons, star ratings, one CTA variant — used sparingly, never decoratively |
 
-This replaces the original warm-amber DTC palette with something closer to a
-clinical/dermatological register. The reasoning: amber/terracotta reads as
-*artisanal, warm, apothecary* — great for a candle or a fragrance brand, but
-it works against a serum whose whole pitch is "efficacy without irritation."
-A cool, slightly desaturated blue-grey against a clean off-white reads as
-*considered, lab-adjacent, low-irritation* — closer to the visual language of
-a dermatologist's office or a clinical skincare brand than a farmer's-market
-apothecary. The near-black text also shifted from a neutral warm-black
-(`#1C1917`) to a true **espresso brown** (`#2B2420`), which keeps just enough
-warmth in the type to stop the page from feeling cold or sterile — the goal
-is *clinical*, not *clinical-and-uninviting*.
+The accent isn't an arbitrary color choice — it's sampled directly from the
+hero product photo. An 11-point pixel sample across the bottle's glass body
+(excluding highlights and cap shadow) averaged to `#A95A0E`; `#A85D1D` is
+that sampled tone, muted down slightly so it reads as a considered UI accent
+rather than a literal copy-paste of a highlight pixel. The effect is a
+palette that looks like it was built *around this specific product photo*,
+not one that happens to share a page with it — every time the accent shows
+up (a star rating, a CTA, a link) it's quietly rhyming with the actual bottle
+sitting in the hero.
 
-One deliberate deviation from the brief's example swatch: the requested
-`#7B8A99`-range blue-grey, used as literal button/text color against the new
-`#FAF9F6` background, only clears a **3.6:1** contrast ratio — under the
-WCAG AA 4.5:1 minimum for normal text. I darkened the accent slightly to
-`#5F7080` (still unmistakably the same dusty blue-grey family) to bring that
-up to **4.85:1**, and swapped the one hover state that would have gone the
-other direction (`FinalCTA`'s button previously brightened to a lighter
-accent on hover, which would have dropped to ~2.2:1 with light text on top —
-it now darkens to `accent-dark` instead, consistent with every other CTA's
-hover direction on this page).
+This replaced an earlier "Cool minimal" direction (a dusty blue-grey accent,
+`#5F7080`) that was chosen for a clinical/dermatological register but ended
+up fighting the product photo's warmth instead of agreeing with it — a cool
+accent next to a warm amber bottle read as slightly disjointed rather than
+considered. Cognac Match keeps the same restrained, low-saturation spirit
+(it's a muted cognac, not a bright DTC orange) while pointing that restraint
+at a color the photo actually contains.
+
+Contrast was re-verified for every text-on-accent and accent-on-background
+pairing in the component tree, not assumed:
+
+| Pairing | Ratio | Result |
+|---|---|---|
+| Accent text on cream background (eyebrow labels, hero headline span, FAQ `+`) | 4.69:1 | Passes AA |
+| Accent text on white background (FAQ hover state, benefit/review cards) | 4.94:1 | Passes AA |
+| Cream button text on accent background (`FinalCTA` base state) | 4.69:1 | Passes AA |
+| Cream button text on `accent-dark` (every button's hover state) | 7.40:1 | Passes AAA |
+| Focus ring (accent) against cream/white | 4.69–4.94:1 | Passes non-text 3:1 minimum with margin |
+
+For reference, neither of the two earlier palettes actually cleared AA for
+white-text-on-button: the original launch amber (`#C1652F`) sat at 3.86:1,
+and the cool blue-grey (`#5F7080`) sat at 3.62:1. This swap fixes that
+alongside the color match — every interactive text/background pairing now
+clears 4.5:1, and hover states in particular are comfortably above it.
+
+One spot this doesn't touch: the faint `01 / 02 / 03` step numerals in
+`HowItWorks.jsx` render the accent at 40% opacity (`text-accent/40`) purely
+as a decorative watermark behind each step's full-contrast title — that
+combination sits around 1.7:1 against the cream background. It was already
+below AA before this change and is unchanged by it; it's left as-is because
+the numeral carries no information that isn't already stated at full
+contrast one line below it (the step title itself), so it isn't a
+WCAG failure, just worth naming rather than silently leaving unaudited.
+
+The near-black text uses a true **espresso brown** (`#2B2420`) rather than a
+neutral warm-black, which keeps just enough warmth in the type to stop the
+page from feeling cold or sterile even as the accent now leans warm too.
 
 **Type**: [Fraunces](https://fonts.google.com/specimen/Fraunces) (a warm,
 editorial serif with soft optical-size detailing) for all headlines, paired
@@ -83,11 +108,10 @@ illustration:
   against a plain background, chosen for an approachable-but-professional
   read rather than a corporate-office or high-fashion-editorial one (both of
   which were in the candidate pool and rejected for tone).
-- **Palette match**: the amber glass and warm shadow in the product photo
-  can't be recolored without looking fake, so instead of fighting the photo's
-  natural warmth, the hero frames it in a rounded card sitting on a soft
-  `accent/15` (dusty blue-grey) backdrop wash — the cool palette shows up in
-  the *staging*, not by artificially color-grading the photo.
+- **Palette match**: the hero frames the photo in a rounded card sitting on
+  a soft `accent/15` backdrop wash. Now that the accent itself is sampled
+  from the bottle's glass, that wash and the photo are the same color
+  family by construction rather than by coincidence.
 - **Loading strategy**: the hero product photo is `loading="eager"` (it's
   the page's LCP element, above the fold on first paint); the founder photo
   is `loading="lazy"` (below the fold). Both use `decoding="async"` and a
